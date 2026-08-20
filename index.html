@@ -53,6 +53,7 @@
     .container {
       position: relative;
       z-index: 2;
+      display: border-box;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -232,15 +233,30 @@
     // --- 2. Dynamic External Background Generator ---
     function loadBackground() {
       const bgLayer = document.getElementById('bg-layer');
-      // Uses Lorem Picsum with random seed to guarantee a new image per session
-      const seed = Date.now() + Math.floor(Math.random() * 10000);
-      const imageUrl = `https://picsum.photos/seed/${seed}/1920/1080?blur=1`;
+      
+      // Dynamic nature image list from Unsplash CDN
+      const externalBackgrounds = [
+        "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80",
+        "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1920&q=80",
+        "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1920&q=80",
+        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80",
+        "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1920&q=80",
+        "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=1920&q=80",
+        "https://images.unsplash.com/photo-1511497584788-87676104235f?auto=format&fit=crop&w=1920&q=80",
+        "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1920&q=80",
+        "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1920&q=80",
+        "https://images.unsplash.com/photo-1426604966848-d7adac402bff?auto=format&fit=crop&w=1920&q=80"
+      ];
 
-      const img = new Image();
-      img.src = imageUrl;
-      img.onload = () => {
-        bgLayer.style.backgroundImage = `url('${imageUrl}')`;
-      };
+      let history = getHistory('seen_bg');
+      let available = externalBackgrounds.filter(url => !history.includes(url));
+      if (available.length === 0) available = externalBackgrounds;
+      
+      const chosenUrl = available[Math.floor(Math.random() * available.length)];
+      saveHistory('seen_bg', chosenUrl);
+
+      // Direct assignment with preloaded fallback to prevent blank renders
+      bgLayer.style.backgroundImage = `url('${chosenUrl}')`;
     }
 
     // --- 3. Dynamic External Quotes API Fetcher ---

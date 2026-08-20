@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0f14">
+  <title>Zen Sanctuary</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #090d16;
+      color: #ffffff;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Fixed Background Layer with Gradient Base */
+    #bg-layer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-image: radial-gradient(circle at 50% 40%, #1e293b 0%, #090d16 100%);
+      filter: brightness(0.65);
+      transition: background-image 0.8s ease-in-out;
+      z-index: 1;
+    }
+
+    /* Layout Container */
+    .container {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      height: 100dvh;
+      padding: clamp(16px, 4vw, 32px);
+      padding-top: calc(clamp(16px, 4vw, 32px) + env(safe-area-inset-top));
+      padding-bottom: calc(clamp(70px, 12vw, 96px) + env(safe-area-inset-bottom));
+      padding-left: calc(clamp(16px, 4vw, 32px) + env(safe-area-inset-left));
+      padding-right: calc(clamp(16px, 4vw, 32px) + env(safe-area-inset-right));
+    }
+
+    /* Glassmorphism Quote Card */
+    .quote-card {
+      background: rgba(15, 23, 42, 0.62);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: clamp(18px, 4vw, 28px);
+      padding: clamp(24px, 6vw, 48px) clamp(20px, 5vw, 40px);
+      width: 100%;
+      max-width: 680px;
+      max-height: 75dvh;
+      overflow-y: auto;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75);
+      scrollbar-width: none;
+    }
+
+    .quote-card::-webkit-scrollbar {
+      display: none;
+    }
+
+    .quote-mark {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(2.2rem, 6vw, 3.4rem);
+      line-height: 1;
+      opacity: 0.45;
+      margin-bottom: 8px;
+    }
+
+    .quote-text {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.15rem, 3.8vw, 1.8rem);
+      line-height: 1.55;
+      letter-spacing: 0.3px;
+      margin-bottom: clamp(16px, 4vw, 24px);
+      color: #f8fafc;
+      word-wrap: break-word;
+    }
+
+    .quote-author {
+      font-size: clamp(0.78rem, 2.2vw, 0.95rem);
+      font-weight: 300;
+      letter-spacing: clamp(1.5px, 0.5vw, 2.5px);
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.75);
+    }
+
+    /* Floating UI Controls */
+    .controls {
+      position: fixed;
+      bottom: calc(16px + env(safe-area-inset-bottom));
+      right: calc(16px + env(safe-area-inset-right));
+      left: calc(16px + env(safe-area-inset-left));
+      z-index: 3;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 12px;
+      pointer-events: none;
+    }
+
+    .track-badge {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 24px;
+      padding: 8px 16px;
+      font-size: clamp(0.72rem, 2vw, 0.82rem);
+      color: rgba(255, 255, 255, 0.85);
+      letter-spacing: 0.4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: calc(100vw - 110px);
+      pointer-events: auto;
+    }
+
+    .btn {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      min-width: 48px;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #ffffff;
+      transition: transform 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+      pointer-events: auto;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+    }
+
+    .btn:active {
+      transform: scale(0.92);
+    }
+
+    .btn svg {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="bg-layer"></div>
+
+  <main class="container">
+    <article class="quote-card" id="quote-card">
+      <div class="quote-mark">“</div>
+      <p class="quote-text" id="quote-text">Silence is the source of great strength.</p>
+      <p class="quote-author" id="quote-author">— Lao Tzu</p>
+    </article>
+  </main>
+
+  <nav class="controls">
+    <div class="track-badge" id="track-badge">Playing Music</div>
+    <button class="btn" id="audio-toggle" title="Play/Pause Music" aria-label="Toggle Music">
+      <svg id="audio-icon" viewBox="0 0 24 24">
+        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+      </svg>
+    </button>
+  </nav>
+
+  <audio id="ambient-audio" loop preload="auto" playsinline webkit-playsinline></audio>
+
+  <script>
+    // --- 1. Memory Store & History ---
+    const memory = {};
+    function getHistory(key) {
+      try {
+        const val = localStorage.getItem(key);
+        return val ? JSON.parse(val) : (memory[key] || []);
+      } catch (e) {
+        return memory[key] || [];
+      }
+    }
+    function saveHistory(key, item, max = 50) {
+      try {
+        let list = getHistory(key);
+        if (!list.includes(item)) {
+          list.push(item);
+          if (list.length > max) list.shift();
+          localStorage.setItem(key, JSON.stringify(list));
+          memory[key] = list;
+        }
+      } catch (e) {
+        let list = memory[key] || [];
+        if (!list.includes(item)) {
+          list.push(item);
+          if (list.length > max) list.shift();
+          memory[key] = list;
+        }
+      }
+    }
+
+    // --- 2. High-Resolution Nature Images Pool ---
+    const BACKGROUNDS = [
+      { id: "bg1", url: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80" },
+      { id: "bg2", url: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1920&q=80" },
+      { id: "bg3", url: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1920&q=80" },
+      { id: "bg4", url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80" },
+      { id: "bg5", url: "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1920&q=80" },
+      { id: "bg6", url: "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=1920&q=80" }
+    ];
+
+    function loadBackground() {
+      const bgLayer = document.getElementById('bg-layer');
+      let history = getHistory('seen_bg');
+      let available = BACKGROUNDS.filter(b => !history.includes(b.id));
+      if (available.length === 0) available = BACKGROUNDS;
+      const chosen = available[Math.floor(Math.random() * available.length)];
+      saveHistory('seen_bg', chosen.id);
+
+      const img = new Image();
+      img.src = chosen.url;
+      img.onload = () => bgLayer.style.backgroundImage = `url('${chosen.url}')`;
+    }
+
+    // --- 3. Inspirational Quotes Pool ---
+    const QUOTES = [
+      { id: "q1", quote: "Silence is the source of great strength.", author: "Lao Tzu" },
+      { id: "q2", quote: "In the midst of movement and chaos, keep stillness inside of you.", author: "Deepak Chopra" },
+      { id: "q3", quote: "Peace comes from within. Do not seek it without.", author: "Buddha" },
+      { id: "q4", quote: "Adopt the pace of nature: her secret is patience.", author: "Ralph Waldo Emerson" },
+      { id: "q5", quote: "The quieter you become, the more you can hear.", author: "Ram Dass" },
+      { id: "q6", quote: "Within you there is a stillness and a sanctuary to which you can retreat at any time.", author: "Hermann Hesse" },
+      { id: "q7", quote: "Nothing can bring you peace but yourself.", author: "Ralph Waldo Emerson" },
+      { id: "q8", quote: "Surrender to what is, let go of what was, have faith in what will be.", author: "Sonia Ricotti" }
+    ];
+
+    function loadQuote() {
+      const quoteText = document.getElementById('quote-text');
+      const quoteAuthor = document.getElementById('quote-author');
+      let history = getHistory('seen_quotes');
+      let available = QUOTES.filter(q => !history.includes(q.id));
+      if (available.length === 0) available = QUOTES;
+      const chosen = available[Math.floor(Math.random() * available.length)];
+      saveHistory('seen_quotes', chosen.id);
+
+      quoteText.textContent = chosen.quote;
+      quoteAuthor.textContent = `— ${chosen.author}`;
+    }
+
+    // --- 4. 15 Studio-Recorded Open-License Classical & Ambient MP3 Tracks ---
+    const TRACKS = [
+      {
+        id: "tr_gymnopedie_1",
+        title: "Erik Satie – Gymnopédie No. 1 (Piano)",
+        url: "https://upload.wikimedia.org/wikipedia/commons/transcoded/e/eb/Gymnopedie_No_1.ogg/Gymnopedie_No_1.ogg.mp3"
+      },
+      {
+        id: "tr_clair_de_lune",
+        title: "Claude Debussy – Clair de Lune (Suite Bergamasque)",
+        url: "https://upload.wikimedia.org/wikipedia/commons/transcoded/2/29/Clair_de_lune_-_Claude_Debussy.ogg/Clair_de_lune_-_Claude_Debussy.ogg.mp3"
+      },
+      {
+        id: "tr_moonlight_sonata",
+        title: "Beethoven – Moonlight Sonata (Adagio sostenuto)",
+        url: "https://upload.wikimedia.org/wikipedia/commons/transcoded/e/eb/Beethoven_Moonlight_1st_movement.ogg/Beethoven_Moonlight_1st_movement.ogg.mp3"
+      },
+      {
+        id: "tr_cello_suite_1",
+        title: "J.S. Bach – Cello Suite No. 1 in G Major (Prélude)",
+        url: "https://upload.wikimedia.org/wikipedia/commons/transcoded/8/8c/Bach_-_Cello_Suite_No.1_in_G_Major_-_BWV_1007_-_1._Prelude.ogg/Bach_-_Cello_Suite_No.1_in_G_Major_-_BWV_1007_-_1._Prelude.ogg.mp3"
+      },
+      {
+        id: "tr_nocturne_9_2",
+        title: "Frédéric Chopin – Nocturne in E-flat Major, Op. 9 No. 2",
+        url: "https://upload.wikimedia.org/wikipedia/commons/transcoded/b/ba/Chopin_Nocturne_Op9_No2.ogg/Chopin_Nocturne_Op9_No2.ogg.mp3"
+      },
+      {
+        id: "tr_gymnopedie_2",
+        title: "Erik Satie – Gymnopédie No. 2 (Lent et triste)",
+        url: "https://upload.wikimedia.org/wikipedia/commons/transcoded/8/8c/Gymnopedie_No_2.ogg/Gymnopedie_No_2.ogg.mp3"
+      },
+      {
+        id: "tr_gymnopedie_3",
+        title: "Erik Satie – Gymnopédie No. 3 (Lent et grave)",
+        url: "https://upload.wikimedia.org/wikipedia/commons/transcoded/6/69/Gymnopedie_No_3.ogg/Gymnopedie_No_3.ogg.mp3"
+      },
+      {
+        id: "tr_traumerei",
+        title: "Robert Schumann – Träumerei (Kinderszenen, Op. 15)",
+        url: "https://upload.wikimedia.org/wikipedia/commons/transcoded/8/89/Schumann_Traumerei.ogg/Schumann_Traumerei.ogg.mp3"
+      },
+      {
+        id: "tr_air_on_g_string",
+        title: "J.S. Bach – Orchestral Suite No. 3: Air on the G String",
+        url: "https://upload.wikimedia.org/wikipedia/commons/transcoded/f/f6/Bach_Air_on_the_G_string.ogg/Bach_Air_on_the_G_string.ogg.mp3"
+      },
+      {
+        id: "tr_liebestraum_3",
+        title: "Franz Liszt – Liebestraum No. 3 in A-flat Major",
+        url: "https://upload.wikimedia.org/wikipedia/commons/transcoded/a/a2/Liszt_Liebestraum_3.ogg/Liszt_Liebestraum_3.ogg.mp3"
+      },
+      {
+        id: "tr_prelude_e_minor",
+        title: "Frédéric Chopin – Prelude in E Minor, Op. 28 No. 4",
+        url: "https://upload.wikimedia.org/wikipedia/commons/transcoded/5/52/Chopin_Prelude_Op_28_No_4.ogg/Chopin_Prelude_Op_28_No_4.ogg.mp3"
+      },
+      {
+        id: "tr_swan_saint_saens",
+        title: "Camille Saint-Saëns – The Swan (Carnival of the Animals)",
+        url: "https://upload.wikimedia.org/wikipedia/commons/transcoded/4/4b/Saint-Saens_-_The_Swan.ogg/Saint-Saens_-_The_Swan.ogg.mp3"
+      },
+      {
+        id: "tr_goldberg_aria",
+        title: "J.S. Bach – Goldberg Variations (Aria)",
+        url: "https://upload.wikimedia.org/wikipedia/commons/transcoded/6/6e/Goldberg_Variations_01_Aria.ogg/Goldberg_Variations_01_Aria.ogg.mp3"
+      },
+      {
+        id: "tr_canon_in_d",
+        title: "Johann Pachelbel – Canon in D (Strings Ensemble)",
+        url: "https://upload.wikimedia.org/wikipedia/commons/transcoded/b/be/Pachelbel_Canon_in_D_strings.ogg/Pachelbel_Canon_in_D_strings.ogg.mp3"
+      },
+      {
+        id: "tr_debussy_arabesque",
+        title: "Claude Debussy – Deux Arabesques No. 1",
+        url: "https://upload.wikimedia.org/wikipedia/commons/transcoded/9/91/Claude_Debussy_-_Premiere_Arabesque.ogg/Claude_Debussy_-_Premiere_Arabesque.ogg.mp3"
+      }
+    ];
+
+    // --- 5. Reliable High-Performance Audio Engine ---
+    function setupMusic() {
+      const audio = document.getElementById('ambient-audio');
+      const audioBtn = document.getElementById('audio-toggle');
+      const trackBadge = document.getElementById('track-badge');
+      let history = getHistory('seen_music');
+
+      let available = TRACKS.filter(t => !history.includes(t.id));
+      if (available.length === 0) available = TRACKS;
+      const track = available[Math.floor(Math.random() * available.length)];
+      saveHistory('seen_music', track.id);
+
+      audio.src = track.url;
+      audio.volume = 0.55;
+      trackBadge.textContent = track.title;
+
+      // 1. Direct Play Attempt
+      const playPromise = audio.play();
+
+      // 2. Mobile / Desktop Interaction Fallback
+      const unlockAudio = () => {
+        if (audio.paused || audio.muted) {
+          audio.muted = false;
+          audio.play().then(() => {
+            audioBtn.style.opacity = '1';
+          }).catch(() => {});
+        }
+        ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(evt => 
+          window.removeEventListener(evt, unlockAudio)
+        );
+      };
+
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          audioBtn.style.opacity = '1';
+        }).catch(() => {
+          audioBtn.style.opacity = '0.5';
+          ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(evt => 
+            window.addEventListener(evt, unlockAudio, { passive: true, once: true })
+          );
+        });
+      }
+
+      // Manual Audio Toggle Button
+      const handleToggle = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (audio.paused) {
+          audio.muted = false;
+          audio.play().then(() => {
+            audioBtn.style.opacity = '1';
+          }).catch(() => {});
+        } else {
+          audio.pause();
+          audioBtn.style.opacity = '0.4';
+        }
+      };
+
+      audioBtn.addEventListener('click', handleToggle);
+      audioBtn.addEventListener('touchend', handleToggle);
+    }
+
+    loadBackground();
+    loadQuote();
+    setupMusic();
+  </script>
+</body>
+</html>

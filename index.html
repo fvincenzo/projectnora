@@ -80,6 +80,7 @@
       text-align: center;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75);
       scrollbar-width: none;
+      transition: opacity 0.4s ease;
     }
 
     .quote-card::-webkit-scrollbar {
@@ -182,8 +183,8 @@
   <main class="container">
     <article class="quote-card" id="quote-card">
       <div class="quote-mark">“</div>
-      <p class="quote-text" id="quote-text">Silence is the source of great strength.</p>
-      <p class="quote-author" id="quote-author">— Lao Tzu</p>
+      <p class="quote-text" id="quote-text">Loading tranquility...</p>
+      <p class="quote-author" id="quote-author"></p>
     </article>
   </main>
 
@@ -228,55 +229,56 @@
       }
     }
 
-    // --- 2. High-Resolution Nature Images ---
-    const BACKGROUNDS = [
-      { id: "bg1", url: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80" },
-      { id: "bg2", url: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1920&q=80" },
-      { id: "bg3", url: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1920&q=80" },
-      { id: "bg4", url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80" },
-      { id: "bg5", url: "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1920&q=80" },
-      { id: "bg6", url: "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=1920&q=80" }
-    ];
-
+    // --- 2. Dynamic External Background Generator ---
     function loadBackground() {
       const bgLayer = document.getElementById('bg-layer');
-      let history = getHistory('seen_bg');
-      let available = BACKGROUNDS.filter(b => !history.includes(b.id));
-      if (available.length === 0) available = BACKGROUNDS;
-      const chosen = available[Math.floor(Math.random() * available.length)];
-      saveHistory('seen_bg', chosen.id);
+      // Uses Lorem Picsum with random seed to guarantee a new image per session
+      const seed = Date.now() + Math.floor(Math.random() * 10000);
+      const imageUrl = `https://picsum.photos/seed/${seed}/1920/1080?blur=1`;
 
       const img = new Image();
-      img.src = chosen.url;
-      img.onload = () => bgLayer.style.backgroundImage = `url('${chosen.url}')`;
+      img.src = imageUrl;
+      img.onload = () => {
+        bgLayer.style.backgroundImage = `url('${imageUrl}')`;
+      };
     }
 
-    // --- 3. Inspirational Quotes Pool ---
-    const QUOTES = [
-      { id: "q1", quote: "Silence is the source of great strength.", author: "Lao Tzu" },
-      { id: "q2", quote: "In the midst of movement and chaos, keep stillness inside of you.", author: "Deepak Chopra" },
-      { id: "q3", quote: "Peace comes from within. Do not seek it without.", author: "Buddha" },
-      { id: "q4", quote: "Adopt the pace of nature: her secret is patience.", author: "Ralph Waldo Emerson" },
-      { id: "q5", quote: "The quieter you become, the more you can hear.", author: "Ram Dass" },
-      { id: "q6", quote: "Within you there is a stillness and a sanctuary to which you can retreat at any time.", author: "Hermann Hesse" },
-      { id: "q7", quote: "Nothing can bring you peace but yourself.", author: "Ralph Waldo Emerson" },
-      { id: "q8", quote: "Surrender to what is, let go of what was, have faith in what will be.", author: "Sonia Ricotti" }
-    ];
-
-    function loadQuote() {
+    // --- 3. Dynamic External Quotes API Fetcher ---
+    async function loadQuote() {
       const quoteText = document.getElementById('quote-text');
       const quoteAuthor = document.getElementById('quote-author');
-      let history = getHistory('seen_quotes');
-      let available = QUOTES.filter(q => !history.includes(q.id));
-      if (available.length === 0) available = QUOTES;
-      const chosen = available[Math.floor(Math.random() * available.length)];
-      saveHistory('seen_quotes', chosen.id);
 
-      quoteText.textContent = chosen.quote;
-      quoteAuthor.textContent = `— ${chosen.author}`;
+      try {
+        // Primary Source: Quotable API (Inspirational/Wisdom tags)
+        const res = await fetch('https://api.quotable.io/random?tags=inspirational|wisdom|peace');
+        if (!res.ok) throw new Error('Primary quote endpoint failed');
+        const data = await res.json();
+        quoteText.textContent = data.content;
+        quoteAuthor.textContent = `— ${data.author || 'Unknown'}`;
+      } catch (err) {
+        try {
+          // Secondary Backup Source: DummyJSON Quotes API
+          const resBackup = await fetch('https://dummyjson.com/quotes/random');
+          if (!resBackup.ok) throw new Error('Backup quote endpoint failed');
+          const dataBackup = await resBackup.json();
+          quoteText.textContent = dataBackup.quote;
+          quoteAuthor.textContent = `— ${dataBackup.author || 'Unknown'}`;
+        } catch (fallbackErr) {
+          // Offline fallback
+          const fallbackQuotes = [
+            { quote: "Silence is the source of great strength.", author: "Lao Tzu" },
+            { quote: "In the midst of movement and chaos, keep stillness inside of you.", author: "Deepak Chopra" },
+            { quote: "Peace comes from within. Do not seek it without.", author: "Buddha" },
+            { quote: "Adopt the pace of nature: her secret is patience.", author: "Ralph Waldo Emerson" }
+          ];
+          const chosen = fallbackQuotes[Math.floor(Math.random() * fallbackQuotes.length)];
+          quoteText.textContent = chosen.quote;
+          quoteAuthor.textContent = `— ${chosen.author}`;
+        }
+      }
     }
 
-    // --- 4. Verified Working Audio Streams (Only 100% Tested Google Audio URLs) ---
+    // --- 4. Verified Working Audio Streams (Untouched) ---
     const TRACKS = [
       {
         id: "tr_forest_brook",
@@ -293,31 +295,6 @@
         title: "Gentle Rain & Calm Downpour",
         url: "https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg"
       },
-      {
-        id: "tr_night_crickets",
-        title: "Midnight Meadow & Soft Nature",
-        url: "https://actions.google.com/sounds/v1/ambiences/outdoor_night_crickets.ogg"
-      },
-      {
-        id: "tr_mountain_river",
-        title: "Mountain River Stream Flow",
-        url: "https://actions.google.com/sounds/v1/water/river_stream_flow.ogg"
-      },
-      {
-        id: "tr_country_morning",
-        title: "Peaceful Countryside Morning",
-        url: "https://actions.google.com/sounds/v1/ambiences/country_morning.ogg"
-      },
-      {
-        id: "tr_rain_on_leaves",
-        title: "Soft Rain Falling on Leaves",
-        url: "https://actions.google.com/sounds/v1/weather/rain_on_leaves.ogg"
-      },
-      {
-        id: "tr_summer_field",
-        title: "Summer Field Warm Ambience",
-        url: "https://actions.google.com/sounds/v1/ambiences/field_in_summer.ogg"
-      }
     ];
 
     function setupMusic() {

@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
   <meta name="theme-color" content="#0b0f14">
   <title>Zen Sanctuary</title>
-  
+
   <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Inter:wght@300;400&display=swap" rel="stylesheet">
-  
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Inter:wght@300;400&display=swap"
+    rel="stylesheet">
+
   <style>
     * {
       margin: 0;
@@ -19,7 +21,8 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    body, html {
+    body,
+    html {
       width: 100%;
       height: 100%;
       height: 100dvh;
@@ -178,6 +181,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <div id="bg-layer"></div>
@@ -194,12 +198,14 @@
     <div class="track-badge" id="track-badge">Playing Audio</div>
     <button class="btn" id="audio-toggle" title="Play/Pause Music" aria-label="Toggle Audio">
       <svg id="audio-icon" viewBox="0 0 24 24">
-        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+        <path
+          d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
       </svg>
     </button>
     <button class="btn" id="share-btn" title="Share Quote" aria-label="Share Quote">
       <svg viewBox="0 0 24 24">
-        <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/>
+        <path
+          d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z" />
       </svg>
     </button>
   </nav>
@@ -239,7 +245,7 @@
     // --- 2. Dynamic External Background Generator ---
     function loadBackground() {
       const bgLayer = document.getElementById('bg-layer');
-      
+
       // Dynamic nature image list from Unsplash CDN
       const externalBackgrounds = [
         "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80",
@@ -256,7 +262,7 @@
       let history = getHistory('seen_bg');
       let available = externalBackgrounds.filter(url => !history.includes(url));
       if (available.length === 0) available = externalBackgrounds;
-      
+
       const chosenUrl = available[Math.floor(Math.random() * available.length)];
       saveHistory('seen_bg', chosenUrl);
 
@@ -315,10 +321,10 @@
 
       try {
         const endpoint = `https://api.jamendo.com/v3.0/tracks/?client_id=${CLIENT_ID}&format=jsonpretty&limit=20&tags=${randomTag}&audioformat=mp32&featured=1&order=releasedate_desc`;
-        
+
         const res = await fetch(endpoint);
         if (!res.ok) throw new Error('Jamendo API error');
-        
+
         const data = await res.json();
         const tracks = data.results;
 
@@ -344,9 +350,9 @@
           audio.muted = false;
           audio.play().then(() => {
             audioBtn.style.opacity = '1';
-          }).catch(() => {});
+          }).catch(() => { });
         }
-        ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(evt => 
+        ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(evt =>
           window.removeEventListener(evt, unlockAudio)
         );
       };
@@ -357,7 +363,7 @@
           audioBtn.style.opacity = '1';
         }).catch(() => {
           audioBtn.style.opacity = '0.5';
-          ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(evt => 
+          ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(evt =>
             window.addEventListener(evt, unlockAudio, { passive: true, once: true })
           );
         });
@@ -371,7 +377,7 @@
           audio.muted = false;
           audio.play().then(() => {
             audioBtn.style.opacity = '1';
-          }).catch(() => {});
+          }).catch(() => { });
         } else {
           audio.pause();
           audioBtn.style.opacity = '0.4';
@@ -381,7 +387,7 @@
       audioBtn.addEventListener('click', handleToggle);
       audioBtn.addEventListener('touchend', handleToggle);
     }
-    
+
     function setupShare() {
       const shareBtn = document.getElementById('share-btn');
       const trackBadge = document.getElementById('track-badge');
@@ -428,4 +434,5 @@
     setupShare();
   </script>
 </body>
+
 </html>

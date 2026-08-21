@@ -179,12 +179,56 @@
       fill: currentColor;
       pointer-events: none;
     }
+
+    /* Weather Badge in Top-Right */
+    .weather-badge {
+      position: fixed;
+      top: calc(16px + env(safe-area-inset-top));
+      right: calc(16px + env(safe-area-inset-right));
+      z-index: 3;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: clamp(0.75rem, 2.2vw, 0.85rem);
+      color: #f8fafc;
+      letter-spacing: 0.3px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      pointer-events: auto;
+      transition: opacity 0.3s ease;
+    }
+
+    .weather-icon {
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    .weather-temp {
+      font-weight: 600;
+      font-family: 'Cinzel', serif;
+    }
+
+    .weather-desc {
+      opacity: 0.8;
+      font-weight: 300;
+    }
   </style>
 </head>
 
 <body>
 
   <div id="bg-layer"></div>
+
+  <aside class="weather-badge" id="weather-badge" aria-label="Current Weather">
+    <span class="weather-icon" id="weather-icon">✨</span>
+    <span class="weather-temp" id="weather-temp">--°</span>
+    <span class="weather-desc" id="weather-desc">Detecting location...</span>
+  </aside>
 
   <main class="container">
     <article class="quote-card" id="quote-card">
@@ -466,12 +510,81 @@
       });
     }
 
+    // --- 5. Open-Meteo Current Location Weather ---
+    const WMO_CODES = {
+      0: { label: "Clear Sky", icon: "☀️" },
+      1: { label: "Mainly Clear", icon: "🌤️" },
+      2: { label: "Partly Cloudy", icon: "⛅" },
+      3: { label: "Overcast", icon: "☁️" },
+      45: { label: "Foggy", icon: "🌫️" },
+      48: { label: "Rime Fog", icon: "🌫️" },
+      51: { label: "Light Drizzle", icon: "🌦️" },
+      53: { label: "Drizzle", icon: "🌦️" },
+      55: { label: "Heavy Drizzle", icon: "🌧️" },
+      61: { label: "Light Rain", icon: "🌧️" },
+      63: { label: "Moderate Rain", icon: "🌧️" },
+      65: { label: "Heavy Rain", icon: "🌧️" },
+      71: { label: "Light Snow", icon: "🌨️" },
+      73: { label: "Snow", icon: "🌨️" },
+      75: { label: "Heavy Snow", icon: "❄️" },
+      80: { label: "Rain Showers", icon: "🌦️" },
+      95: { label: "Thunderstorm", icon: "⛈️" }
+    };
+
+    async function fetchWeather(lat, lon) {
+      const endpoint = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=auto`;
+
+      const res = await fetch(endpoint);
+      if (!res.ok) throw new Error("Weather service unreachable");
+      return await res.json();
+    }
+
+    function updateWeatherUI(temp, code) {
+      const iconElem = document.getElementById('weather-icon');
+      const tempElem = document.getElementById('weather-temp');
+      const descElem = document.getElementById('weather-desc');
+
+      const meta = WMO_CODES[code] || { label: "Calm", icon: "🌤️" };
+      iconElem.textContent = meta.icon;
+      tempElem.textContent = `${Math.round(temp)}°C`;
+      descElem.textContent = meta.label;
+    }
+
+    function loadWeather() {
+      const descElem = document.getElementById('weather-desc');
+
+      if (!navigator.geolocation) {
+        descElem.textContent = "Location unavailable";
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            const { latitude, longitude } = position.coords;
+            const data = await fetchWeather(latitude, longitude);
+            const current = data.current;
+            updateWeatherUI(current.temperature_2m, current.weather_code);
+          } catch (err) {
+            descElem.textContent = "Weather offline";
+          }
+        },
+        (err) => {
+          // Permission denied or GPS timeout fallback
+          descElem.textContent = "Location disabled";
+        },
+        { timeout: 8000, enableHighAccuracy: false }
+      );
+    }
+
+    loadWeather();
     loadBackground();
     loadQuote();
     setupMusic();
 
     // Call inside your initial load sequence
     setupShare();
+
   </script>
 </body>
 

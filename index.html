@@ -210,7 +210,7 @@
     </button>
   </nav>
 
-  <audio id="ambient-audio" loop preload="auto" playsinline webkit-playsinline></audio>
+  <audio id="ambient-audio" preload="auto" playsinline webkit-playsinline></audio>
 
   <script>
     // --- 1. Storage & State Management ---
@@ -306,70 +306,73 @@
     }
 
     // --- 4. Dynamic Creative Commons Music (Jamendo API) ---
-    async function setupMusic() {
-      const audio = document.getElementById('ambient-audio');
-      const audioBtn = document.getElementById('audio-toggle');
-      const trackBadge = document.getElementById('track-badge');
+    let trackQueue = [];
+    let currentTrackIndex = -1;
 
-      // Client ID: You can register for free at developer.jamendo.com
-      // '56d30c95' is Jamendo's public sandbox test client ID
+    async function fetchTracks() {
       const CLIENT_ID = '56d30c95';
       const tags = ['ambient', 'meditation', 'relaxation', 'nature'];
       const randomTag = tags[Math.floor(Math.random() * tags.length)];
-
-      trackBadge.textContent = 'Loading tranquil audio...';
+      const endpoint = `https://api.jamendo.com/v3.0/tracks/?client_id=${CLIENT_ID}&format=jsonpretty&limit=30&tags=${randomTag}&audioformat=mp32&featured=1&order=releasedate_desc`;
 
       try {
-        const endpoint = `https://api.jamendo.com/v3.0/tracks/?client_id=${CLIENT_ID}&format=jsonpretty&limit=20&tags=${randomTag}&audioformat=mp32&featured=1&order=releasedate_desc`;
-
         const res = await fetch(endpoint);
-        if (!res.ok) throw new Error('Jamendo API error');
-
+        if (!res.ok) throw new Error('Network response not ok');
         const data = await res.json();
-        const tracks = data.results;
-
-        if (!tracks || tracks.length === 0) throw new Error('No tracks found');
-
-        // Pick a random track from the result set
-        const chosenTrack = tracks[Math.floor(Math.random() * tracks.length)];
-
-        audio.src = chosenTrack.audio;
-        audio.volume = 0.55;
-        trackBadge.textContent = `${chosenTrack.name} — ${chosenTrack.artist_name}`;
-
+        return data.results && data.results.length > 0 ? data.results : null;
       } catch (err) {
-        // Graceful fallback to verified public CC0 nature stream if API fails
-        audio.src = "https://actions.google.com/sounds/v1/water/small_stream_flowing.ogg";
-        audio.volume = 0.55;
-        trackBadge.textContent = "Forest Brook (Ambient)";
+        return null;
+      }
+    }
+
+    async function playNextTrack() {
+      const audio = document.getElementById('ambient-audio');
+      const trackBadge = document.getElementById('track-badge');
+      const audioBtn = document.getElementById('audio-toggle');
+
+      if (trackQueue.length === 0) {
+        trackBadge.textContent = 'Discovering music...';
+        trackQueue = await fetchTracks();
       }
 
-      // --- Interaction Unlocker & Autoplay ---
-      const unlockAudio = () => {
-        if (audio.paused || audio.muted) {
-          audio.muted = false;
-          audio.play().then(() => {
-            audioBtn.style.opacity = '1';
-          }).catch(() => { });
-        }
-        ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(evt =>
-          window.removeEventListener(evt, unlockAudio)
-        );
-      };
+      if (trackQueue && trackQueue.length > 0) {
+        // Pick a different track from the queue
+        let nextIndex;
+        do {
+          nextIndex = Math.floor(Math.random() * trackQueue.length);
+        } while (trackQueue.length > 1 && nextIndex === currentTrackIndex);
 
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
+        currentTrackIndex = nextIndex;
+        const track = trackQueue[currentTrackIndex];
+
+        audio.src = track.audio;
+        audio.volume = 0.55;
+        trackBadge.textContent = `${track.name} — ${track.artist_name}`;
+
+        audio.play().then(() => {
           audioBtn.style.opacity = '1';
         }).catch(() => {
           audioBtn.style.opacity = '0.5';
-          ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(evt =>
-            window.addEventListener(evt, unlockAudio, { passive: true, once: true })
-          );
         });
+      } else {
+        // Fallback if API fails
+        audio.src = "https://actions.google.com/sounds/v1/water/small_stream_flowing.ogg";
+        audio.volume = 0.55;
+        trackBadge.textContent = "Forest Brook (Ambient)";
+        audio.play().catch(() => { });
       }
+    }
 
-      // Toggle button handler
+    function setupMusic() {
+      const audio = document.getElementById('ambient-audio');
+      const audioBtn = document.getElementById('audio-toggle');
+
+      // Trigger next song automatically when current one finishes
+      audio.addEventListener('ended', () => {
+        playNextTrack();
+      });
+
+      // Toggle Play / Pause
       const handleToggle = (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -386,6 +389,26 @@
 
       audioBtn.addEventListener('click', handleToggle);
       audioBtn.addEventListener('touchend', handleToggle);
+
+      // Initial user interaction unlocker
+      const unlockAudio = () => {
+        if (audio.paused) {
+          audio.muted = false;
+          audio.play().then(() => {
+            audioBtn.style.opacity = '1';
+          }).catch(() => { });
+        }
+        ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(evt =>
+          window.removeEventListener(evt, unlockAudio)
+        );
+      };
+
+      ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(evt =>
+        window.addEventListener(evt, unlockAudio, { passive: true, once: true })
+      );
+
+      // Load the first track
+      playNextTrack();
     }
 
     function setupShare() {

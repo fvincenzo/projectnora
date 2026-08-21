@@ -242,32 +242,49 @@
       }
     }
 
-    // --- 2. Dynamic External Background Generator ---
-    function loadBackground() {
+    // --- 2. Dynamic Creative Commons Backgrounds (Zero-Auth) ---
+    async function loadBackground() {
       const bgLayer = document.getElementById('bg-layer');
 
-      // Dynamic nature image list from Unsplash CDN
-      const externalBackgrounds = [
-        "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80",
-        "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1920&q=80",
-        "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1920&q=80",
-        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80",
-        "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1920&q=80",
-        "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=1920&q=80",
-        "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1920&q=80",
-        "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1920&q=80",
-        "https://images.unsplash.com/photo-1426604966848-d7adac402bff?auto=format&fit=crop&w=1920&q=80"
+      // Calming nature search terms
+      const searchQueries = [
+        'Category:Mist_in_forests',
+        'Category:Mountain_lakes',
+        'Category:Zen_gardens',
+        'Category:Sunsets_over_water',
+        'Category:Japanese_gardens'
       ];
+      const query = searchQueries[Math.floor(Math.random() * searchQueries.length)];
 
-      let history = getHistory('seen_bg');
-      let available = externalBackgrounds.filter(url => !history.includes(url));
-      if (available.length === 0) available = externalBackgrounds;
+      try {
+        // Queries Wikimedia Commons for high-res landscape images in the selected category
+        const endpoint = `https://commons.wikimedia.org/w/api.php?action=query&generator=categorymembers&gcmtitle=${encodeURIComponent(query)}&gcmtype=file&gcmlimit=25&prop=imageinfo&iiprop=url|mime&format=json&origin=*`;
 
-      const chosenUrl = available[Math.floor(Math.random() * available.length)];
-      saveHistory('seen_bg', chosenUrl);
+        const res = await fetch(endpoint);
+        if (!res.ok) throw new Error('Wikimedia API error');
 
-      // Direct assignment with preloaded fallback to prevent blank renders
-      bgLayer.style.backgroundImage = `url('${chosenUrl}')`;
+        const data = await res.json();
+        const pages = Object.values(data.query.pages || {});
+
+        // Filter only JPEG/PNG images (excluding SVGs and audio)
+        const validImages = pages
+          .filter(p => p.imageinfo && p.imageinfo[0] && (p.imageinfo[0].mime === 'image/jpeg' || p.imageinfo[0].mime === 'image/png'))
+          .map(p => p.imageinfo[0].url);
+
+        if (validImages.length === 0) throw new Error('No images found');
+
+        const chosenUrl = validImages[Math.floor(Math.random() * validImages.length)];
+
+        // Preload image before applying to avoid blank flickers
+        const img = new Image();
+        img.src = chosenUrl;
+        img.onload = () => {
+          bgLayer.style.backgroundImage = `url('${chosenUrl}')`;
+        };
+      } catch (err) {
+        // Safe fallback to high-res nature background if network drops
+        bgLayer.style.backgroundImage = "url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80')";
+      }
     }
 
     // --- 3. Dynamic External Quotes API Fetcher ---

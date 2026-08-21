@@ -310,7 +310,7 @@
     let currentTrackIndex = -1;
 
     async function fetchTracks() {
-      const CLIENT_ID = '56d30c95';
+      const CLIENT_ID = '6cc82698';
       const tags = ['ambient', 'meditation', 'relaxation', 'nature'];
       const randomTag = tags[Math.floor(Math.random() * tags.length)];
       const endpoint = `https://api.jamendo.com/v3.0/tracks/?client_id=${CLIENT_ID}&format=jsonpretty&limit=30&tags=${randomTag}&audioformat=mp32&featured=1&order=releasedate_desc`;

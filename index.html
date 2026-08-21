@@ -197,6 +197,11 @@
         <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
       </svg>
     </button>
+    <button class="btn" id="share-btn" title="Share Quote" aria-label="Share Quote">
+      <svg viewBox="0 0 24 24">
+        <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/>
+      </svg>
+    </button>
   </nav>
 
   <audio id="ambient-audio" loop preload="auto" playsinline webkit-playsinline></audio>
@@ -374,9 +379,50 @@
       audioBtn.addEventListener('touchend', handleToggle);
     }
 
+    function setupShare() {
+      const shareBtn = document.getElementById('share-btn');
+      const trackBadge = document.getElementById('track-badge');
+
+      shareBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const quoteText = document.getElementById('quote-text').textContent;
+        const quoteAuthor = document.getElementById('quote-author').textContent;
+        const shareData = {
+          title: 'Zen Sanctuary',
+          text: `“${quoteText}” ${quoteAuthor}`,
+          url: window.location.href
+        };
+
+        if (navigator.share) {
+          try {
+            await navigator.share(shareData);
+          } catch (err) {
+            // User canceled share; no action needed
+          }
+        } else {
+          // Fallback: Copy to clipboard and show badge feedback
+          try {
+            await navigator.clipboard.writeText(`“${quoteText}” ${quoteAuthor}`);
+            const originalText = trackBadge.textContent;
+            trackBadge.textContent = 'Quote copied to clipboard!';
+            setTimeout(() => {
+              trackBadge.textContent = originalText;
+            }, 2500);
+          } catch (err) {
+            alert('Could not copy quote.');
+          }
+        }
+      });
+    }
+
     loadBackground();
     loadQuote();
     setupMusic();
+
+    // Call inside your initial load sequence
+    setupShare();
   </script>
 </body>
 </html>

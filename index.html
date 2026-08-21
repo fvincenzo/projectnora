@@ -299,44 +299,46 @@
       }
     }
 
-    // --- 4. Verified Working Audio Streams (Untouched) ---
-    const TRACKS = [
-      {
-        id: "tr_forest_brook",
-        title: "Forest Brook & Soft Water Flow",
-        url: "https://actions.google.com/sounds/v1/water/small_stream_flowing.ogg"
-      },
-      {
-        id: "tr_ocean_swell",
-        title: "Tranquil Ocean Swell & Shore",
-        url: "https://actions.google.com/sounds/v1/water/waves_crashing_on_rock_beach.ogg"
-      },
-      {
-        id: "tr_gentle_rain",
-        title: "Gentle Rain & Calm Downpour",
-        url: "https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg"
-      },
-    ];
-
-    function setupMusic() {
+    // --- 4. Dynamic Creative Commons Music (Jamendo API) ---
+    async function setupMusic() {
       const audio = document.getElementById('ambient-audio');
       const audioBtn = document.getElementById('audio-toggle');
       const trackBadge = document.getElementById('track-badge');
 
-      let history = getHistory('seen_music');
-      let available = TRACKS.filter(t => !history.includes(t.id));
-      if (available.length === 0) available = TRACKS;
-      const track = available[Math.floor(Math.random() * available.length)];
-      saveHistory('seen_music', track.id);
+      // Client ID: You can register for free at developer.jamendo.com
+      // '56d30c95' is Jamendo's public sandbox test client ID
+      const CLIENT_ID = '56d30c95';
+      const tags = ['ambient', 'meditation', 'relaxation', 'nature'];
+      const randomTag = tags[Math.floor(Math.random() * tags.length)];
 
-      audio.src = track.url;
-      audio.volume = 0.55;
-      trackBadge.textContent = track.title;
+      trackBadge.textContent = 'Loading tranquil audio...';
 
-      // Autoplay attempt
-      const playPromise = audio.play();
+      try {
+        const endpoint = `https://api.jamendo.com/v3.0/tracks/?client_id=${CLIENT_ID}&format=jsonpretty&limit=20&tags=${randomTag}&audioformat=mp32&featured=1&order=releasedate_desc`;
+        
+        const res = await fetch(endpoint);
+        if (!res.ok) throw new Error('Jamendo API error');
+        
+        const data = await res.json();
+        const tracks = data.results;
 
-      // Mobile & Desktop interaction unlocker
+        if (!tracks || tracks.length === 0) throw new Error('No tracks found');
+
+        // Pick a random track from the result set
+        const chosenTrack = tracks[Math.floor(Math.random() * tracks.length)];
+
+        audio.src = chosenTrack.audio;
+        audio.volume = 0.55;
+        trackBadge.textContent = `${chosenTrack.name} — ${chosenTrack.artist_name}`;
+
+      } catch (err) {
+        // Graceful fallback to verified public CC0 nature stream if API fails
+        audio.src = "https://actions.google.com/sounds/v1/water/small_stream_flowing.ogg";
+        audio.volume = 0.55;
+        trackBadge.textContent = "Forest Brook (Ambient)";
+      }
+
+      // --- Interaction Unlocker & Autoplay ---
       const unlockAudio = () => {
         if (audio.paused || audio.muted) {
           audio.muted = false;
@@ -349,6 +351,7 @@
         );
       };
 
+      const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise.then(() => {
           audioBtn.style.opacity = '1';
@@ -360,7 +363,7 @@
         });
       }
 
-      // Manual Audio Toggle Button
+      // Toggle button handler
       const handleToggle = (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -378,7 +381,7 @@
       audioBtn.addEventListener('click', handleToggle);
       audioBtn.addEventListener('touchend', handleToggle);
     }
-
+    
     function setupShare() {
       const shareBtn = document.getElementById('share-btn');
       const trackBadge = document.getElementById('track-badge');

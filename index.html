@@ -53,6 +53,47 @@
       z-index: 1;
     }
 
+    /* Custom WCO Title Bar */
+    .custom-titlebar {
+      display: none;
+      /* Hidden by default in standard browser tabs */
+      position: fixed;
+      top: env(titlebar-area-y, 0);
+      left: env(titlebar-area-x, 0);
+      width: env(titlebar-area-width, 100%);
+      height: env(titlebar-area-height, 36px);
+      z-index: 999;
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      align-items: center;
+      padding: 0 14px;
+      app-region: drag;
+      /* Makes the title bar draggable */
+      -webkit-app-region: drag;
+    }
+
+    .custom-titlebar .app-title {
+      font-family: 'Cinzel', serif;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      color: rgba(255, 255, 255, 0.85);
+      pointer-events: none;
+    }
+
+    /* Activate title bar and offset controls when WCO is active */
+    @media (display-mode: window-controls-overlay) {
+      .custom-titlebar {
+        display: flex;
+      }
+
+      /* Shift weather badge down to avoid collision with top title bar area */
+      .weather-badge {
+        top: calc(env(titlebar-area-height, 36px) + 12px) !important;
+      }
+    }
+
     /* Layout Container */
     .container {
       position: relative;
@@ -238,6 +279,9 @@
 </head>
 
 <body>
+  <header id="custom-titlebar" class="custom-titlebar">
+    <div class="app-title">Zen Sanctuary</div>
+  </header>
 
   <div id="bg-layer"></div>
 
@@ -623,6 +667,26 @@
       );
     }
 
+    // --- 6. Window Controls Overlay (WCO) Handler ---
+    function setupWindowControlsOverlay() {
+      if ('windowControlsOverlay' in navigator) {
+        const titlebar = document.getElementById('custom-titlebar');
+
+        // Initial check when page opens
+        if (titlebar) {
+          titlebar.style.display = navigator.windowControlsOverlay.visible ? 'flex' : 'none';
+        }
+
+        // React dynamically if the user toggles the title bar button in desktop PWA
+        navigator.windowControlsOverlay.addEventListener('geometrychange', () => {
+          const isOverlayVisible = navigator.windowControlsOverlay.visible;
+          if (titlebar) {
+            titlebar.style.display = isOverlayVisible ? 'flex' : 'none';
+          }
+        });
+      }
+    }
+
     loadWeather();
     loadBackground();
     loadQuote();
@@ -630,6 +694,8 @@
 
     // Call inside your initial load sequence
     setupShare();
+
+    setupWindowControlsOverlay();
 
   </script>
 </body>

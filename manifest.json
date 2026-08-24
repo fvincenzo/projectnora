@@ -21,7 +21,7 @@
   ],
   "display_override": [
     "window-controls-overlay",
-    "minimal-ui"
+    "standalone"
   ],
   "background_color": "#090d16",
   "theme_color": "#0b0f14",

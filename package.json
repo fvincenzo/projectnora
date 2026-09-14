@@ -1,0 +1,17 @@
+{
+  "name": "zen-sanctuary",
+  "version": "1.0.0",
+  "description": "A zen sanctuary PWA with ambient music and inspirational quotes",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx serve .",
+    "build": "echo 'No build step required for static site'",
+    "lint": "echo 'No linting configured'"
+  },
+  "keywords": ["pwa", "zen", "meditation", "ambient"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@vercel/analytics": "^1.1.1"
+  }
+}

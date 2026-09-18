@@ -1,0 +1,14 @@
+{
+  "name": "projectnora",
+  "version": "1.0.0",
+  "description": "Zen Sanctuary Progressive Web App",
+  "scripts": {
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": ["pwa", "zen", "sanctuary"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  }
+}
